@@ -24,9 +24,11 @@ for laptop in laptops:
     data = pd.read_html(raw_html, header=0)[0]
     #del data["Download"]
     row = data.iloc[0]
+
+    #print('Description', row['Description'])
     print('Released', row['Released'])
     print('Version', row['Version'])
     print('Importance', row['Importance'])
-    print('Download', row['Download'])
-    display(data.head(4))
+    #print('Download', row['Download'])
+    display(data.head(2))
     print()
