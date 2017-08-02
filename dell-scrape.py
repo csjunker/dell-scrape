@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pandas as pd
 from lxml import html
 import json
@@ -7,15 +8,15 @@ import logging
 logging.basicConfig(filename='dell-scrape.log', level=logging.WARN)
 json_config_file = 'laptop_list.json'
 base_url = r'http://downloads.dell.com/published/pages/'
-smtp_server = 'mail.geoinfo.dk'
-mail_to = 'peterb@geoinfo.dk'
-mail_from = 'bruger@informi.dk'
+smtp_server = 'mailserver.somewhere'
+mail_to = 'to@example.com'
+mail_from = 'from@example.com'
 mail_subject = 'NY BIOS Opdatering'
-mail_template = """From: Din Underdanige slave <{from}>
-To: Master <{to}>
+mail_template = """From: Dell Scrape Script <{from}>
+To: <{to}>
 Subject: {subject}
 
-Der er Bios opdateringer til:
+There are BIOS updates for:
 
 {laptop}
 """
