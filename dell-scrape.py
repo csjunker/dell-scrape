@@ -1,34 +1,77 @@
 import pandas as pd
 from lxml import html
-from IPython.display import display
+import json
+import smtplib
+import logging
 
-import laptop_list
-#laptops = {'Latitude E5570': '1.11.4', 'Precision 7510': '1.9.5', 'Latitude E6540': 'A16'}
-laptops = laptop_list.laptops
-
-
-
+logging.basicConfig(filename='dell-scrape.log', level=logging.WARN)
+json_config_file = 'laptop_list.json'
 base_url = r'http://downloads.dell.com/published/pages/'
+smtp_server = 'mail.geoinfo.dk'
+mail_to = 'peterb@geoinfo.dk'
+mail_from = 'bruger@informi.dk'
+mail_subject = 'NY BIOS Opdatering'
+mail_template = """From: Din Underdanige slave <{from}>
+To: Master <{to}>
+Subject: {subject}
+
+Der er Bios opdateringer til:
+
+{laptop}
+"""
+
+# DO NOT CHANGE BELOW
+
 search_url = base_url + 'index.html'
 xpath = "//*[@id=\"Drivers-Category.BI-Type.BIOS\"]/table[1]"
 
+try:
+    logging.debug('opening config {}'.format(json_config_file))
+    with open(json_config_file, 'r') as jfile:
+        laptops = json.load(jfile)
+except Exception as e:
+    logging.exception('failed opening config file {}'.format(json_config_file))
 
-oversigt = html.parse(search_url)
+try:
+    logging.debug('opening oversigt {}'.format(search_url))
+    oversigt = html.parse(search_url)
+except Exception as e:
+    logging.exception('failed parsing oversigt url {}'.format(search_url))
+
+updated = []
+
+
+def update_data(laptop, row):
+    d = laptops[laptop]
+    logging.debug('updating {} existing data {}'.format(laptop, d))
+    save = False
+    for key in ['Released', 'Version', 'Importance']:
+        ny_val = row[key]
+        if (key not in d) or (d[key] != ny_val):
+            d[key] = ny_val
+            laptops[laptop] = d
+            save = True
+    if save:
+        updated.append(laptop)
+        with open(json_config_file, 'w') as jfile:
+            jfile.write(json.dumps(laptops, indent=4, separators=(',', ': ')))
 
 for laptop in laptops:
-    url = base_url + oversigt.xpath("//a[text()='" + laptop + "']/@href")[0]
-    print(laptop, url)
-    tree = html.parse(url)
-    table = tree.xpath(xpath)[0]
-    raw_html = html.tostring(table)
-    data = pd.read_html(raw_html, header=0)[0]
-    #del data["Download"]
-    row = data.iloc[0]
+    try:
+        url = base_url + oversigt.xpath("//a[text()='" + laptop + "']/@href")[0]
+        tree = html.parse(url)
+        table = tree.xpath(xpath)[0]
+        raw_html = html.tostring(table)
+        data = pd.read_html(raw_html, header=0)[0]
+        row = data.iloc[0]
+        update_data(laptop, row)
+    except Exception:
+        print('Error: fetch info failed for {laptop}'.format(laptop=laptop))
 
-    #print('Description', row['Description'])
-    print('Released', row['Released'])
-    print('Version', row['Version'])
-    print('Importance', row['Importance'])
-    #print('Download', row['Download'])
-    display(data.head(2))
-    print()
+if len(updated) > 0:
+    try:
+        message = mail_template.format(**{'from': mail_from, 'to': mail_to, 'subject': mail_subject, 'laptop': '\n'.join(updated)})
+        smtpObj = smtplib.SMTP(smtp_server)
+        smtpObj.sendmail(mail_from, [mail_to], message)
+    except smtplib.SMTPException as e:
+        print("Error: unable to send email")

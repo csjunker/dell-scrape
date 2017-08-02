@@ -1,0 +1,42 @@
+{
+    "Latitude E7270": {
+        "Released": "6/26/2017",
+        "Version": "1.16.4",
+        "Importance": "Recommended"
+    },
+    "Latitude E6540": {
+        "Released": "6/13/2017",
+        "Version": "A21",
+        "Importance": "Urgent"
+    },
+    "Precision 7510": {
+        "Released": "7/13/2017",
+        "Version": "1.13.6",
+        "Importance": "Urgent"
+    },
+    "Latitude E5570": {
+        "Released": "6/26/2017",
+        "Version": "1.15.4",
+        "Importance": "Optional"
+    },
+    "Latitude E6520": {
+        "Released": "5/23/2017",
+        "Version": "A20",
+        "Importance": "Urgent"
+    },
+    "Latitude E7250/7250": {
+        "Released": "5/23/2017",
+        "Version": "A16",
+        "Importance": "Urgent"
+    },
+    "Latitude E7240 Ultrabook": {
+        "Released": "5/24/2017",
+        "Version": "A21",
+        "Importance": "Urgent"
+    },
+    "Latitude E6230": {
+        "Released": "5/23/2017",
+        "Version": "A18",
+        "Importance": "Urgent"
+    }
+}
