@@ -20,16 +20,20 @@ There are BIOS updates for:
 """
 
 # DO NOT CHANGE BELOW
+sendMail = True
 
 search_url = base_url + 'index.html'
 xpath = "//*[@id=\"Drivers-Category.BI-Type.BIOS\"]/table[1]"
 
-try:
-    logging.debug('opening config {}'.format(json_config_file))
-    with open(json_config_file, 'r') as jfile:
-        laptops = json.load(jfile)
-except Exception as e:
-    logging.exception('failed opening config file {}'.format(json_config_file))
+def load_config():
+    try:
+        logging.debug('opening config {}'.format(json_config_file))
+        with open(json_config_file, 'r') as jfile:
+            return json.load(jfile)
+    except Exception as e:
+        logging.exception('failed opening config file {}'.format(json_config_file))
+        raise e
+laptops = load_config()
 
 try:
     logging.debug('opening oversigt {}'.format(search_url))
@@ -88,8 +92,11 @@ if len(updated) > 0:
             for key in data:
                 laptopmessage += '  {}: {}\n'.format(key, data[key])
 
+        print (laptopmessage)
+
         message = mail_template.format(**{'from': mail_from, 'to': mail_to, 'subject': mail_subject, 'laptop': laptopmessage})
-        smtpObj = smtplib.SMTP(smtp_server)
-        smtpObj.sendmail(mail_from, [mail_to], message)
+        if sendMail:
+            smtpObj = smtplib.SMTP(smtp_server)
+            smtpObj.sendmail(mail_from, [mail_to], message)
     except smtplib.SMTPException as e:
         logging.exception("Error: unable to send email")
